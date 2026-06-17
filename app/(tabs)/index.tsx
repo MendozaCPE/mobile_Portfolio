@@ -25,7 +25,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-
 const { width, height } = Dimensions.get('window');
 const skillCardSize = (width - 64 - 16) / 2;
 const CARD_W = width * 0.65;
@@ -36,7 +35,6 @@ const CAROUSEL_SIDE_PAD = (width - CARD_W) / 2;
 const MOCKUP_H = CARD_H * 0.60;
 const INFO_H = CARD_H * 0.40;
 
-// ── Project data ──────────────────────────────────────────────────────────────
 const PROJECTS = [
   {
     id: '1',
@@ -85,14 +83,13 @@ const PROJECTS = [
 ];
 
 const LOOP_PROJECTS = [
-  PROJECTS[PROJECTS.length - 1], // Index 0: Fake P4 at the beginning
-  ...PROJECTS,                   // Index 1..4: Real P1, P2, P3, P4
-  PROJECTS[0],                   // Index 5: Fake P1 at the end
+  PROJECTS[PROJECTS.length - 1],
+  ...PROJECTS,
+  PROJECTS[0],
 ];
 
 type Project = (typeof PROJECTS)[0];
 
-// ── Typing animation label ───────────────────────────────────────────────────
 const ROLES = ['Developer', 'UI/UX Designer', 'Freelancer'];
 
 function TypingLabel() {
@@ -101,28 +98,22 @@ function TypingLabel() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(true);
 
-  // Blink cursor
   useEffect(() => {
     const blink = setInterval(() => setCursorVisible((v) => !v), 500);
     return () => clearInterval(blink);
   }, []);
 
-  // Typing / deleting
   useEffect(() => {
     const full = ROLES[roleIdx];
     let timeout: ReturnType<typeof setTimeout>;
 
     if (!isDeleting && displayed.length < full.length) {
-      // Still typing
       timeout = setTimeout(() => setDisplayed(full.slice(0, displayed.length + 1)), 90);
     } else if (!isDeleting && displayed.length === full.length) {
-      // Pause at the end before deleting
       timeout = setTimeout(() => setIsDeleting(true), 1600);
     } else if (isDeleting && displayed.length > 0) {
-      // Erasing
       timeout = setTimeout(() => setDisplayed(full.slice(0, displayed.length - 1)), 55);
     } else if (isDeleting && displayed.length === 0) {
-      // Move to next role
       setIsDeleting(false);
       setRoleIdx((i) => (i + 1) % ROLES.length);
     }
@@ -138,7 +129,6 @@ function TypingLabel() {
   );
 }
 
-// ── Subtle grid overlay inside card mockup area ───────────────────────────────
 function CardGrid() {
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -172,12 +162,8 @@ function CardGrid() {
   );
 }
 
-
-
-// ── ProjectCard ───────────────────────────────────────────────────────────────
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
-// ── ProjectCard ───────────────────────────────────────────────────────────────
 function ProjectCard({
   project,
   index,
@@ -193,7 +179,6 @@ function ProjectCard({
     const scale = interpolate(scrollX.value, inputRange, [0.85, 1, 0.85], Extrapolation.CLAMP);
     const opacity = interpolate(scrollX.value, inputRange, [0.45, 1, 0.45], Extrapolation.CLAMP);
 
-    // Pull adjacent cards closer so they peek and overlap behind the active card
     const shift = CARD_W * 0.38;
     const translateX = interpolate(
       scrollX.value,
@@ -221,12 +206,10 @@ function ProjectCard({
   const blurAnimStyle = useAnimatedStyle(() => {
     const center = index * SNAP_INTERVAL;
     const inputRange = [center - SNAP_INTERVAL, center, center + SNAP_INTERVAL];
-    // Inactive cards are fully blurred (opacity 1), active card is completely clear (opacity 0)
     const opacity = interpolate(scrollX.value, inputRange, [1, 0, 1], Extrapolation.CLAMP);
     return { opacity };
   });
 
-  // First 2 tags shown, rest as +N
   const visibleTags = project.tags.slice(0, 2);
   const extraCount = project.tags.length - 2;
 
@@ -239,22 +222,18 @@ function ProjectCard({
           borderRadius: 20,
           overflow: 'hidden',
           marginRight: CARD_GAP,
-          // Card border — glass look
           borderWidth: 1,
           borderColor: 'rgba(255,255,255,0.08)',
-          // Shadow glow using project's accent
           shadowColor: project.accent,
           shadowOffset: { width: 0, height: 12 },
           shadowOpacity: 0.22,
           shadowRadius: 20,
-          backgroundColor: 'rgba(12, 12, 20, 0.20)', // Transparent glass container background
+          backgroundColor: 'rgba(12, 12, 20, 0.20)',
         },
         animStyle,
       ]}
     >
-      {/* Container to separate content from absolute blur overlay */}
       <View style={{ flex: 1 }}>
-        {/* ── MOCKUP IMAGE AREA (top 60%) ─────────────────────────────── */}
         <View
           style={{
             height: MOCKUP_H,
@@ -268,7 +247,6 @@ function ProjectCard({
             contentFit="cover"
           />
           <CardGrid />
-          {/* Accent glow at bottom of mockup */}
           <View
             pointerEvents="none"
             style={{
@@ -281,7 +259,6 @@ function ProjectCard({
               backgroundColor: project.accent + '22',
             }}
           />
-          {/* Fade gradient into info panel */}
           <View
             pointerEvents="none"
             style={{
@@ -295,11 +272,10 @@ function ProjectCard({
           />
         </View>
 
-        {/* ── GLASS INFO PANEL (bottom 40%) ───────────────────────────── */}
         <View
           style={{
             height: INFO_H,
-            backgroundColor: 'rgba(10, 10, 18, 0.75)', // Transparent dark overlay
+            backgroundColor: 'rgba(10, 10, 18, 0.75)',
             paddingHorizontal: 18,
             paddingTop: 14,
             paddingBottom: 14,
@@ -308,7 +284,6 @@ function ProjectCard({
             justifyContent: 'space-between',
           }}
         >
-          {/* Title + description */}
           <View style={{ gap: 6 }}>
             <Text
               style={{
@@ -329,10 +304,8 @@ function ProjectCard({
             </Text>
           </View>
 
-          {/* Divider */}
           <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.07)', marginVertical: 2 }} />
 
-          {/* Tags + icons */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
               <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: project.accent }} />
@@ -350,7 +323,6 @@ function ProjectCard({
         </View>
       </View>
 
-      {/* ── absolute blur overlay for inactive side cards ── */}
       <AnimatedBlurView
         intensity={30}
         tint="dark"
@@ -361,7 +333,6 @@ function ProjectCard({
   );
 }
 
-// ── Section background grid ───────────────────────────────────────────────────
 function SectionGrid() {
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
@@ -391,7 +362,6 @@ function SectionGrid() {
           }}
         />
       ))}
-      {/* Ambient glow centre */}
       <View
         style={{
           position: 'absolute',
@@ -407,9 +377,6 @@ function SectionGrid() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HomeScreen
-// ─────────────────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
@@ -420,10 +387,8 @@ export default function HomeScreen() {
   const carouselRef = useAnimatedRef<Animated.ScrollView>();
   const carouselScrollX = useSharedValue(0);
   const [activeIndex, setActiveIndex] = useState(0);
-  // loopIndex tracks position within LOOP_PROJECTS (0..5); real cards are 1..4
   const loopIndexRef = React.useRef(1);
 
-  // ── Scroll-to-contact ──────────────────────────────────────────────────────
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   const contactSectionY = React.useRef(0);
   const scrollToContact = () => {
@@ -457,12 +422,10 @@ export default function HomeScreen() {
     const x = e.nativeEvent.contentOffset.x;
     const idx = Math.round(x / SNAP_INTERVAL);
     if (idx === 0) {
-      // Landed on clone of last card -> jump silently to real last card
       const realLastX = PROJECTS.length * SNAP_INTERVAL;
       carouselRef.current?.scrollTo({ x: realLastX, y: 0, animated: false });
       loopIndexRef.current = PROJECTS.length;
     } else if (idx === PROJECTS.length + 1) {
-      // Landed on clone of first card -> jump silently to real first card
       carouselRef.current?.scrollTo({ x: SNAP_INTERVAL, y: 0, animated: false });
       loopIndexRef.current = 1;
     }
@@ -479,17 +442,11 @@ export default function HomeScreen() {
     }
   }, [textWidth]);
 
-  // Autoplay loop: runs once on mount, uses loopIndexRef so it never stales
   useEffect(() => {
     const timer = setInterval(() => {
-      // Advance to the next position in LOOP_PROJECTS
       let next = loopIndexRef.current + 1;
-      // If next would go past the last clone (idx = PROJECTS.length + 1),
-      // reset silently to real first card before animating forward.
       if (next > PROJECTS.length + 1) next = 1;
       carouselRef.current?.scrollTo({ x: next * SNAP_INTERVAL, y: 0, animated: true });
-      // If we scrolled onto the trailing clone (fake P1 at end),
-      // schedule a silent jump to real P1 after animation completes (~350 ms).
       if (next === PROJECTS.length + 1) {
         setTimeout(() => {
           carouselRef.current?.scrollTo({ x: SNAP_INTERVAL, y: 0, animated: false });
@@ -501,7 +458,7 @@ export default function HomeScreen() {
     }, 3500);
 
     return () => clearInterval(timer);
-  }, []); // empty deps — interval is stable; ref keeps value current
+  }, []);
 
   const marqueeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: translateX.value }] }));
 
@@ -547,7 +504,6 @@ export default function HomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* ── Sticky header ── */}
         <Animated.View style={stickyBannerStyle} pointerEvents="box-none">
           <View style={[styles.stickyBanner, { paddingTop: insets.top }]}>
             <View style={styles.stickyHeaderContent}>
@@ -559,7 +515,6 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* ── Morphing profile image ── */}
         <Animated.View style={morphingImageStyle} pointerEvents="none">
           <Image
             source={require('@/assets/images/profilepicture.png')}
@@ -568,7 +523,6 @@ export default function HomeScreen() {
           />
         </Animated.View>
 
-        {/* ── Hero ── */}
         <Animated.View
           style={[styles.heroContainer, heroFadeStyle, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
         >
@@ -602,14 +556,12 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* ── Centered "About Me" hint at very bottom of hero ── */}
           <View style={styles.heroScrollHint} pointerEvents="none">
             <Text style={styles.heroScrollHintText}>About Me</Text>
             <Feather name="chevron-down" size={14} color="rgba(255,255,255,0.45)" />
           </View>
         </Animated.View>
 
-        {/* ── About Me ── */}
         <View style={styles.aboutContainer}>
           <View style={styles.aboutContent}>
             <Text style={styles.aboutTitle}>ABOUT ME</Text>
@@ -655,7 +607,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Skills ── */}
         <View style={styles.skillsContainer}>
           <Text style={styles.skillsTitle}>
             My <Text style={styles.skillsTitleBold}>Skills</Text>
@@ -708,11 +659,9 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Projects ── */}
         <View style={styles.projectsSection}>
           <SectionGrid />
 
-          {/* Section header */}
           <View style={styles.projectsHeader}>
             <View>
               <Text style={styles.projectsTitle}>Projects</Text>
@@ -727,7 +676,6 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Carousel */}
           <Animated.ScrollView
             ref={carouselRef}
             horizontal
@@ -754,7 +702,6 @@ export default function HomeScreen() {
             ))}
           </Animated.ScrollView>
 
-          {/* Dot indicators */}
           <View style={styles.dotsRow}>
             {PROJECTS.map((p, i) => (
               <TouchableOpacity
@@ -779,21 +726,17 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Contact / Footer ── */}
         <View
           style={styles.contactSection}
           onLayout={(e) => { contactSectionY.current = e.nativeEvent.layout.y; }}
         >
 
-          {/* Heading */}
           <View style={styles.contactHeadingRow}>
             <Text style={styles.contactEyebrow}>GET IN TOUCH</Text>
             <Text style={styles.contactTitle}>Let's{`\n`}Connect.</Text>
           </View>
 
-          {/* Contact items */}
           <View style={styles.contactItems}>
-            {/* Email */}
             <TouchableOpacity
               style={styles.contactRow}
               activeOpacity={0.7}
@@ -809,7 +752,6 @@ export default function HomeScreen() {
               <Feather name="arrow-up-right" size={14} color="rgba(255,255,255,0.25)" />
             </TouchableOpacity>
 
-            {/* Phone */}
             <TouchableOpacity
               style={styles.contactRow}
               activeOpacity={0.7}
@@ -825,7 +767,6 @@ export default function HomeScreen() {
               <Feather name="arrow-up-right" size={14} color="rgba(255,255,255,0.25)" />
             </TouchableOpacity>
 
-            {/* Location */}
             <View style={styles.contactRow}>
               <View style={styles.contactIconWrap}>
                 <Feather name="map-pin" size={18} color="rgba(255,255,255,0.55)" />
@@ -837,7 +778,6 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Bottom bar */}
           <View style={styles.contactFooterBar}>
             <Text style={styles.contactFooterText}>
               © {new Date().getFullYear()} Christian Paul Mendoza
@@ -852,13 +792,9 @@ export default function HomeScreen() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, backgroundColor: '#050505' },
 
-  // ── Hero ─────────────────────────────────────────────────────────────────
   heroContainer: {
     height,
     backgroundColor: 'transparent',
@@ -928,7 +864,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
 
-  // ── Sticky header ─────────────────────────────────────────────────────────
   stickyBanner: {
     position: 'absolute',
     top: 0,
@@ -954,7 +889,6 @@ const styles = StyleSheet.create({
   },
   stickyHeaderTextRight: { color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 'bold' },
 
-  // ── About ─────────────────────────────────────────────────────────────────
   aboutContainer: { backgroundColor: '#050505', paddingBottom: 80, paddingTop: 80, zIndex: 10 },
   aboutContent: { paddingHorizontal: 32 },
   aboutTitle: {
@@ -978,7 +912,6 @@ const styles = StyleSheet.create({
     transform: [{ scaleY: 1.3 }],
   },
 
-  // ── Skills ───────────────────────────────────────────────────────────────
   skillsContainer: { backgroundColor: '#FFFFFF', paddingVertical: 60, paddingHorizontal: 32 },
   skillsTitle: { fontSize: 50, color: '#050505', textAlign: 'center', marginBottom: 40, letterSpacing: -0.5 },
   skillsTitleBold: { fontWeight: 'bold' },
@@ -1024,7 +957,6 @@ const styles = StyleSheet.create({
   },
   sqlBoxText: { fontWeight: 'bold', fontSize: 22, color: '#336791' },
 
-  // ── Projects section ──────────────────────────────────────────────────────
   projectsSection: {
     backgroundColor: '#000000',
     paddingTop: 60,
@@ -1055,7 +987,6 @@ const styles = StyleSheet.create({
   projectsCounterActive: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' },
   projectsCounterTotal: { fontSize: 13, color: 'rgba(255,255,255,0.26)', fontWeight: '500' },
 
-  // ── Dots ──────────────────────────────────────────────────────────────────
   dotsRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 },
   dot: { height: 5, borderRadius: 2.5 },
   dotActive: { width: 20 },
@@ -1063,7 +994,6 @@ const styles = StyleSheet.create({
 
   bottomSpacer: { height: 40, backgroundColor: '#050505' },
 
-  // ── Contact / Footer ─────────────────────────────────────────────────────
   contactSection: {
     backgroundColor: '#050505',
     paddingTop: 60,
